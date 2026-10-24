@@ -6,4 +6,5 @@
     <string name="LoginQrUsePhone">Log in by phone number</string>
     <string name="HidePremiumFeatures">Hide Premium features</string>
     <string name="HidePremiumFeaturesInfo">Hide Premium-only stickers, emoji, reactions and upgrade prompts</string>
+    <string name="SelectMorePhotos">Select more photos</string>
 </resources>

@@ -782,6 +782,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
 
         parentAlert.selectedMenuItem.addColoredGap(preview_gap);
         parentAlert.selectedMenuItem.addSubItem(open_in, R.drawable.msg_openin, LocaleController.getString(R.string.OpenInExternalApp));
+        org.telegram.tabgram.MediaPermissions.addSelectMoreItem(parentAlert.selectedMenuItem);
         compressItem = parentAlert.selectedMenuItem.addSubItem(compress, R.drawable.msg_filehq, LocaleController.getString(R.string.SendWithoutCompression));
         parentAlert.selectedMenuItem.addSubItem(group, R.drawable.msg_ungroup, LocaleController.getString(R.string.SendWithoutGrouping));
         parentAlert.selectedMenuItem.addColoredGap(media_gap);
@@ -3197,7 +3198,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         }
         return Build.VERSION.SDK_INT >= 23 && (
             activity == null ||
-                Build.VERSION.SDK_INT >= 33 && (
+                Build.VERSION.SDK_INT >= 33 && !org.telegram.tabgram.MediaPermissions.hasSelectedAccess(activity) && (
                     activity.checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED ||
                         activity.checkSelfPermission(Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED
                 ) ||
@@ -3206,6 +3207,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
     }
 
     public void checkStorage() {
+        org.telegram.tabgram.MediaPermissions.onStoragePermissionResult(parentAlert.selectedMenuItem, getContext());
         if (noGalleryPermissions && Build.VERSION.SDK_INT >= 23) {
             noGalleryPermissions = isNoGalleryPermissions();
             if (!noGalleryPermissions) {
@@ -3228,6 +3230,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
 
     @Override
     public void onMenuItemClick(int id) {
+        if (org.telegram.tabgram.MediaPermissions.onMenuItemClick(id, getContext())) return;
         if (id == caption) {
             parentAlert.setCaptionAbove(!parentAlert.captionAbove);
             captionItem.setState(!parentAlert.captionAbove, true);
@@ -3729,6 +3732,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         if (Build.VERSION.SDK_INT >= 23) {
             noGalleryPermissions = isNoGalleryPermissions();
         }
+        org.telegram.tabgram.MediaPermissions.updateSelectMoreItem(parentAlert.selectedMenuItem, getContext());
         if (galleryAlbumEntry != null) {
             for (int a = 0; a < Math.min(100, galleryAlbumEntry.photos.size()); a++) {
                 MediaController.PhotoEntry photoEntry = galleryAlbumEntry.photos.get(a);

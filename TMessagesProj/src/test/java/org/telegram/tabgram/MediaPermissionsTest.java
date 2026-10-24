@@ -23,4 +23,25 @@ public class MediaPermissionsTest {
         assertFalse(MediaPermissions.askFullMediaAtStartup(34, true));
         assertFalse(MediaPermissions.askFullMediaAtStartup(36, true));
     }
+
+    @Test
+    public void selectedPhotosCountAsGalleryAccessFromAndroid14() {
+        assertTrue(MediaPermissions.hasSelectedAccess(34, true));
+        assertTrue(MediaPermissions.hasSelectedAccess(36, true));
+        assertFalse(MediaPermissions.hasSelectedAccess(36, false));
+        assertFalse(MediaPermissions.hasSelectedAccess(33, true));
+    }
+
+    @Test
+    public void limitedAccessIsPartialUntilFullAccessIsGranted() {
+        assertTrue(MediaPermissions.isPartialAccess(34, true, false));
+        assertTrue(MediaPermissions.isPartialAccess(36, true, false));
+        assertFalse(MediaPermissions.isPartialAccess(36, true, true));
+    }
+
+    @Test
+    public void noSelectionOrOldAndroidIsNotPartial() {
+        assertFalse(MediaPermissions.isPartialAccess(36, false, false));
+        assertFalse(MediaPermissions.isPartialAccess(33, true, false));
+    }
 }
