@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="AppName">Tabgram</string>
+    <string name="AppNameBeta">Tabgram</string>
+    <string name="TelegramVersion">Tabgram for Android %1$s</string>
+</resources>

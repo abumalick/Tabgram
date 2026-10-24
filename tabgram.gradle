@@ -54,8 +54,14 @@ project(':TMessagesProj_App') { app ->
 
         // Strings resolve through the generated localization assets, which only read the
         // values/strings.xml files the task is given; Android string resources alone render as LOC_ERR.
-        app.tasks.withType(org.telegram.tasks.TelegramStringsTask).configureEach {
-            stringsXml.from(project(':TMessagesProj').file('src/tabgram/res/values/strings.xml'))
+        // A later strings.xml wins, so the app overlay's branding strings must follow the plugin's
+        // inputs: configuring after evaluation runs after the plugin's registration action.
+        app.afterEvaluate {
+            app.tasks.withType(org.telegram.tasks.TelegramStringsTask).configureEach {
+                stringsXml.from(project(':TMessagesProj').file('src/tabgram/res/values/strings.xml'))
+                stringsXml.from(app.file('src/tabgram/res/values/strings.xml'))
+                localizationFiles.from(app.fileTree('src/tabgram/res') { include 'values-*/strings.xml' })
+            }
         }
 
         // Without it the Google Services plugin silently falls back to the upstream config.

@@ -4445,7 +4445,7 @@ public class LocaleController {
         final Context context = ApplicationLoader.applicationContext;
         String value;
 
-        if (BuildVars.USE_CLOUD_STRINGS) {
+        if (BuildVars.USE_CLOUD_STRINGS && !org.telegram.tabgram.Branding.isBrandingString(key, stringRes)) {
             value = localizationExternal.getByResNameOrResId(context, key, stringRes);
             if (value != null) {
                 return value;
