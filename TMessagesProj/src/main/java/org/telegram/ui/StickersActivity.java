@@ -586,14 +586,7 @@ public class StickersActivity extends BaseFragment implements NotificationCenter
         sets = newSets;
         needReorder = true;
 
-        Collections.sort(MediaDataController.getInstance(currentAccount).getStickerSets(currentType), (o1, o2) -> {
-            int i1 = sets.indexOf(o1);
-            int i2 = sets.indexOf(o2);
-            if (i1 >= 0 && i2 >= 0) {
-                return i1 - i2;
-            }
-            return 0;
-        });
+        Collections.sort(MediaDataController.getInstance(currentAccount).getStickerSets(currentType), org.telegram.tabgram.StickerFilters.byVisibleOrder(org.telegram.tabgram.StickerFilters.setIds(sets), s -> s.set.id));
 
         AndroidUtilities.cancelRunOnUIThread(sendReorderRunnable);
         AndroidUtilities.runOnUIThread(sendReorderRunnable, 1000);
@@ -611,9 +604,7 @@ public class StickersActivity extends BaseFragment implements NotificationCenter
         final TLRPC.TL_messages_reorderStickerSets req = new TLRPC.TL_messages_reorderStickerSets();
         req.masks = currentType == TYPE_MASK;
         req.emojis = currentType == TYPE_EMOJIPACKS;
-        for (int a = 0; a < sets.size(); a++) {
-            req.order.add(sets.get(a).set.id);
-        }
+        req.order.addAll(org.telegram.tabgram.StickerFilters.serverOrder(org.telegram.tabgram.StickerFilters.setIds(sets), org.telegram.tabgram.StickerFilters.setIds(MediaDataController.getInstance(currentAccount).getStickerSets(currentType))));
         ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> activeReorderingRequests--));
         NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.stickersDidLoad, currentType, true);
 

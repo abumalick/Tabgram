@@ -32404,7 +32404,7 @@ public class ChatActivity extends BaseFragment implements
                             }
                         }
 
-                        if (stickerSets.size() > 0 && !getMessagesController().premiumFeaturesBlocked()) {
+                        if (stickerSets.size() > 0 && !getMessagesController().premiumServerLocked()) {
                             popupLayout.addView(new ActionBarPopupWindow.GapView(contentView.getContext(), themeDelegate), LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 8));
 
                             View button = new MessageContainsEmojiButton(currentAccount, contentView.getContext(), themeDelegate, stickerSets, MessageContainsEmojiButton.EMOJI_TYPE);
@@ -40902,7 +40902,7 @@ public class ChatActivity extends BaseFragment implements
 
         @Override
         public boolean didPressAnimatedEmoji(ChatMessageCell cell, AnimatedEmojiSpan span) {
-            if (getMessagesController().premiumFeaturesBlocked() || span == null || span.standard) {
+            if (getMessagesController().premiumServerLocked() || span == null || span.standard) {
                 return false;
             }
             final long documentId = span.getDocumentId();

@@ -139,7 +139,7 @@ public class PremiumGradient {
     }
 
     public Paint getMainGradientPaint() {
-        if (MessagesController.getInstance(UserConfig.selectedAccount).premiumFeaturesBlocked()) {
+        if (MessagesController.getInstance(UserConfig.selectedAccount).premiumServerLocked()) {
             if (lockedPremiumPaint == null) {
                 lockedPremiumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             }

@@ -583,6 +583,9 @@ public class PremiumFeatureBottomSheet extends BottomSheet implements Notificati
 
     @Override
     public void show() {
+        if (org.telegram.tabgram.HidePremium.hidesFeatureSheet(org.telegram.tabgram.HidePremium.isEnabled(), UserConfig.getInstance(currentAccount).isPremium(), startType)) {
+            return;
+        }
         super.show();
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.stopAllHeavyOperations, 16);
     }

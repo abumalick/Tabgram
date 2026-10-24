@@ -3674,6 +3674,7 @@ public class SelectAnimatedEmojiDialog extends FrameLayout implements Notificati
         }
         ArrayList<TLRPC.TL_messages_stickerSet> installedEmojipacks = frozenEmojiPacks;
         ArrayList<TLRPC.StickerSetCovered> featuredEmojiPacks = new ArrayList<>(mediaDataController.getFeaturedEmojiSets());
+        final boolean hidePremiumPacks = org.telegram.tabgram.HidePremium.hidesAnimatedEmojiPacks(org.telegram.tabgram.HidePremium.isEnabled(), UserConfig.getInstance(currentAccount).isPremium(), type);
 
         ArrayList<Long> prevRowHashCodes = new ArrayList<>(rowHashCodes);
         totalCount = 0;
@@ -4026,6 +4027,9 @@ public class SelectAnimatedEmojiDialog extends FrameLayout implements Notificati
                 if ((type == TYPE_EMOJI_STATUS_CHANNEL_TOP || type == TYPE_EMOJI_STATUS_CHANNEL) && !set.set.channel_emoji_status) {
                     continue;
                 }
+                if (hidePremiumPacks && MessageObject.isPremiumEmojiPack(set)) {
+                    continue;
+                }
                 if ((set.set.emojis || showStickers) && !installedEmojiSets.contains(set.set.id)) {
                     positionToSection.put(totalCount, packs.size());
                     sectionToPosition.put(packs.size(), totalCount);
@@ -4095,6 +4099,9 @@ public class SelectAnimatedEmojiDialog extends FrameLayout implements Notificati
                     continue;
                 }
                 if ((type == TYPE_EMOJI_STATUS_CHANNEL_TOP || type == TYPE_EMOJI_STATUS_CHANNEL) && !set.channel_emoji_status) {
+                    continue;
+                }
+                if (hidePremiumPacks && isPremiumPack) {
                     continue;
                 }
 

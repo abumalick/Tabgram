@@ -744,7 +744,7 @@ public class PrivacySettingsActivity extends BaseFragment implements Notificatio
             noncontactsRow = rowCount++;
         } else {
             voicesRow = -1;
-            noncontactsRow = -1;
+            noncontactsRow = getMessagesController().premiumServerLocked() ? -1 : rowCount++;
         }
         birthdayRow = rowCount++;
         giftsRow = rowCount++;

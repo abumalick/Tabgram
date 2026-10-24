@@ -1184,6 +1184,9 @@ public class ReactionsContainerLayout extends FrameLayout implements Notificatio
         if (type == TYPE_STICKER_SET_EMOJI) {
             showExpandableReactions = true;
         }
+        if (org.telegram.tabgram.HidePremium.hidesReactions(org.telegram.tabgram.HidePremium.isEnabled(), UserConfig.getInstance(currentAccount).isPremium(), type)) {
+            allReactionsAvailable = false;
+        }
         setVisibleReactionsList(visibleReactions, animated);
 
         if (message != null && message.messageOwner.reactions != null && message.messageOwner.reactions.results != null) {
@@ -1449,9 +1452,13 @@ public class ReactionsContainerLayout extends FrameLayout implements Notificatio
         }
 
         if (type != TYPE_TAGS || UserConfig.getInstance(currentAccount).isPremium()) {
+            final boolean hidePremium = org.telegram.tabgram.HidePremium.hidesReactions(org.telegram.tabgram.HidePremium.isEnabled(), UserConfig.getInstance(currentAccount).isPremium(), type);
             ArrayList<TLRPC.Reaction> recentReactions = MediaDataController.getInstance(currentAccount).getRecentReactions();
             for (int i = 0; i < recentReactions.size(); i++) {
                 ReactionsLayoutInBubble.VisibleReaction visibleReaction = ReactionsLayoutInBubble.VisibleReaction.fromTL(recentReactions.get(i));
+                if (hidePremium && visibleReaction.documentId != 0) {
+                    continue;
+                }
                 if (!hashSet.contains(visibleReaction)) {
                     hashSet.add(visibleReaction);
                     visibleReactions.add(visibleReaction);

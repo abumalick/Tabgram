@@ -741,6 +741,9 @@ public class MessagesController extends BaseController implements NotificationCe
         return !starsLocked;
     }
     public boolean premiumFeaturesBlocked() {
+        return (premiumLocked || org.telegram.tabgram.HidePremium.isEnabled()) && !getUserConfig().isPremium();
+    }
+    public boolean premiumServerLocked() {
         return premiumLocked && !getUserConfig().isPremium();
     }
     public boolean premiumPurchaseBlocked() {
@@ -953,16 +956,7 @@ public class MessagesController extends BaseController implements NotificationCe
         if (!premiumFeaturesBlocked()) {
             return stickerSets;
         }
-        for (int i = 0; i < stickerSets.size(); i++) {
-            TLRPC.TL_messages_stickerSet newSet = MessagesController.getInstance(currentAccount).filterPremiumStickers(stickerSets.get(i));
-            if (newSet == null) {
-                stickerSets.remove(i);
-                i--;
-            } else {
-                stickerSets.set(i, newSet);
-            }
-        }
-        return stickerSets;
+        return org.telegram.tabgram.StickerFilters.filteredCopy(stickerSets, this::filterPremiumStickers);
     }
 
     public TLRPC.TL_messages_stickerSet filterPremiumStickers(TLRPC.TL_messages_stickerSet stickerSet) {
@@ -988,15 +982,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 nativeByteBuffer.reuse();
                 stickerSet = newStickersSet;
 
-                for (int i = 0; i < stickerSet.documents.size(); i++) {
-                    if (MessageObject.isPremiumSticker(stickerSet.documents.get(i))) {
-                        stickerSet.documents.remove(i);
-                        stickerSet.packs.remove(i);
-                        i--;
-                        if (stickerSet.documents.isEmpty()) {
-                            return null;
-                        }
-                    }
+                org.telegram.tabgram.StickerFilters.removeDocuments(stickerSet.documents, stickerSet.packs, MessageObject::isPremiumSticker);
+                if (stickerSet.documents.isEmpty()) {
+                    return null;
                 }
             }
         } catch (Exception e) {

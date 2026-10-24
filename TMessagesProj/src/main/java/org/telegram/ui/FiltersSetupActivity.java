@@ -602,6 +602,10 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
         items.add(ItemInner.asShadow(!getUserConfig().isPremium() ? AndroidUtilities.replaceSingleTag(LocaleController.getString(R.string.FolderShowTagsInfoPremium), Theme.key_windowBackgroundWhiteBlueHeader, AndroidUtilities.REPLACING_TAG_TYPE_LINKBOLD, () -> {
             presentFragment(new PremiumPreviewFragment("settings"));
         }) : LocaleController.getString(R.string.FolderShowTagsInfo)));
+        if (getMessagesController().premiumFeaturesBlocked()) {
+            items.subList(folderTagsPosition, items.size()).clear();
+            folderTagsPosition = showTagsRow = -1;
+        }
 
         if (adapter != null) {
             if (animated) {

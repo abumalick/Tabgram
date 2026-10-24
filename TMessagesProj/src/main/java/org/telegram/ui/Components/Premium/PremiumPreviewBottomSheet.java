@@ -711,6 +711,9 @@ public class PremiumPreviewBottomSheet extends BottomSheetWithRecyclerListView i
 
     @Override
     public void show() {
+        if (org.telegram.tabgram.HidePremium.hidesPreviewSheet(org.telegram.tabgram.HidePremium.isEnabled(), UserConfig.getInstance(currentAccount).isPremium(), user != null, giftTier != null || gift != null || emojiStatusCollectible != null)) {
+            return;
+        }
         super.show();
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.stopAllHeavyOperations, 4);
         if (animateConfetti) {

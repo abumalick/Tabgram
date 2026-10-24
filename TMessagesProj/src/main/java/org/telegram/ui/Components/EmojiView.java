@@ -7584,6 +7584,7 @@ public class EmojiView extends FrameLayout implements
             }
             ArrayList<TLRPC.TL_messages_stickerSet> installedEmojipacks = frozenEmojiPacks;
             boolean isPremium = UserConfig.getInstance(currentAccount).isPremium() || allowEmojisForNonPremium;
+            final boolean hidePremium = org.telegram.tabgram.HidePremium.hides(org.telegram.tabgram.HidePremium.isEnabled(), isPremium || delegate != null && delegate.isUserSelf());
             int index = 0;
 
             if (info != null && info.emojiset != null) {
@@ -7655,7 +7656,7 @@ public class EmojiView extends FrameLayout implements
                         pack.expanded = true;
                         emojipacksProcessed.add(pack);
                     }
-                    if (premiumEmojis.size() > 0) {
+                    if (premiumEmojis.size() > 0 && !hidePremium) {
                         EmojiPack pack = new EmojiPack();
                         pack.index = index++;
                         pack.set = set.set;
@@ -7691,7 +7692,6 @@ public class EmojiView extends FrameLayout implements
                 if (pack.documents == null || pack.documents.isEmpty()) {
                     continue;
                 }
-                pack.index = index++;
                 boolean premium = false;
                 for (int j = 0; j < pack.documents.size(); ++j) {
                     if (!MessageObject.isFreeEmoji(pack.documents.get(j))) {
@@ -7699,6 +7699,10 @@ public class EmojiView extends FrameLayout implements
                         break;
                     }
                 }
+                if (premium && hidePremium) {
+                    continue;
+                }
+                pack.index = index++;
                 pack.free = !premium;
                 pack.expanded = expandedEmojiSets.contains(pack.set.id);
                 pack.featured = true;
@@ -9437,7 +9441,7 @@ public class EmojiView extends FrameLayout implements
 
             private void addLocalPacks(Runnable finished) {
                 ArrayList<TLRPC.TL_messages_stickerSet> local = MediaDataController.getInstance(currentAccount).getStickerSets(MediaDataController.TYPE_IMAGE);
-                MessagesController.getInstance(currentAccount).filterPremiumStickers(local);
+                local = MessagesController.getInstance(currentAccount).filterPremiumStickers(local);
                 int index;
                 for (int a = 0, size = local.size(); a < size; a++) {
                     TLRPC.TL_messages_stickerSet set = local.get(a);
@@ -9454,7 +9458,7 @@ public class EmojiView extends FrameLayout implements
                     }
                 }
                 local = MediaDataController.getInstance(currentAccount).getStickerSets(MediaDataController.TYPE_FEATURED);
-                MessagesController.getInstance(currentAccount).filterPremiumStickers(local);
+                local = MessagesController.getInstance(currentAccount).filterPremiumStickers(local);
                 for (int a = 0, size = local.size(); a < size; a++) {
                     TLRPC.TL_messages_stickerSet set = local.get(a);
                     if ((index = AndroidUtilities.indexOfIgnoreCase(set.set.title, searchQuery)) >= 0) {
