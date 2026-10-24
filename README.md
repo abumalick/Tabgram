@@ -1,3 +1,20 @@
+## Tabgram
+
+**Tabgram is an unofficial Telegram client for Android. It is not affiliated with or endorsed by Telegram.** It is built from the official source code below, kept as a small stack of commits on branch `tabgram` so upstream releases can be merged in easily.
+
+Changes from the official app:
+
+- Log in by scanning a QR code from another logged-in device.
+- Reorder All Chats among the folder tabs without Premium.
+- An optional switch hides Premium-only content and upsell for non-Premium accounts.
+- Sponsored messages are shown as a compact pill; they are still reported as viewed and clicked.
+- Each chat or channel gets its own notification instead of one grouped notification, so tapping it always opens that chat.
+- Fixes: Back on tablets after a layout change, Archive kept on rotation, the New Contacts notification switch, and no repeated photo-access prompt after limited access.
+
+To build it, see [UPSTREAM-UPDATE.md](UPSTREAM-UPDATE.md). You need your own api_id, signing key and Firebase project in the gitignored files it lists.
+
+The upstream README follows.
+
 ## Telegram messenger for Android
 
 [Telegram](https://telegram.org) is a messaging app with a focus on speed and security. It’s superfast, simple and free.
