@@ -1,0 +1,65 @@
+// Tabgram build identity, kept out of the module scripts so upstream merges stay clean.
+def tabgramPackage = 'net.hilson.tabgram'
+
+def tabgramPropsFile = rootProject.file('unofficial.properties')
+def tabgramProps = new Properties()
+if (tabgramPropsFile.exists()) {
+    tabgramPropsFile.withInputStream { tabgramProps.load(it) }
+}
+def missingKeys = ['UNOFFICIAL_APP_ID', 'UNOFFICIAL_APP_HASH', 'UNOFFICIAL_STORE_PASSWORD', 'UNOFFICIAL_KEY_ALIAS', 'UNOFFICIAL_KEY_PASSWORD']
+        .findAll { !tabgramProps.getProperty(it)?.trim() }
+if (missingKeys) {
+    throw new GradleException("${tabgramPropsFile} must define: ${missingKeys.join(', ')}")
+}
+
+project(':TMessagesProj') {
+    plugins.withId('com.android.library') {
+        android {
+            defaultConfig {
+                buildConfigField 'int', 'UNOFFICIAL_APP_ID', tabgramProps.getProperty('UNOFFICIAL_APP_ID')
+                buildConfigField 'String', 'UNOFFICIAL_APP_HASH', "\"${tabgramProps.getProperty('UNOFFICIAL_APP_HASH')}\""
+                resValue 'string', 'account_type', tabgramPackage
+            }
+            sourceSets.main.java.srcDirs += 'src/tabgram/java'
+            sourceSets.main.res.srcDirs += 'src/tabgram/res'
+        }
+        dependencies {
+            testImplementation 'junit:junit:4.13.2'
+        }
+    }
+}
+
+project(':TMessagesProj_App') { app ->
+    plugins.withId('com.android.application') {
+        // The module script sets applicationId, the debug suffix and signing after this
+        // callback runs, so the overrides go in finalizeDsl to win.
+        androidComponents {
+            finalizeDsl { android ->
+                def tabgramSigning = android.signingConfigs.maybeCreate('tabgram')
+                tabgramSigning.storeFile = rootProject.file('unofficial-signing/tabgram.keystore')
+                tabgramSigning.storePassword = tabgramProps.getProperty('UNOFFICIAL_STORE_PASSWORD')
+                tabgramSigning.keyAlias = tabgramProps.getProperty('UNOFFICIAL_KEY_ALIAS')
+                tabgramSigning.keyPassword = tabgramProps.getProperty('UNOFFICIAL_KEY_PASSWORD')
+
+                android.defaultConfig.applicationId = tabgramPackage
+                android.buildTypes.debug.applicationIdSuffix = null
+                android.buildTypes.debug.signingConfig = tabgramSigning
+                android.buildTypes.release.signingConfig = tabgramSigning
+
+                android.sourceSets.main.res.srcDirs += 'src/tabgram/res'
+                android.sourceSets.maybeCreate('afatDebug').manifest.srcFile 'src/tabgram/AndroidManifest.xml'
+                android.sourceSets.maybeCreate('afatRelease').manifest.srcFile 'src/tabgram/AndroidManifest.xml'
+            }
+        }
+
+        // Without it the Google Services plugin silently falls back to the upstream config.
+        def releaseGoogleServices = app.file('src/release/google-services.json')
+        app.tasks.matching { it.name ==~ /process\w*ReleaseGoogleServices/ }.configureEach {
+            doFirst {
+                if (!releaseGoogleServices.exists()) {
+                    throw new GradleException("Missing ${releaseGoogleServices}")
+                }
+            }
+        }
+    }
+}

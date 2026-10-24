@@ -53,3 +53,4 @@ subprojects {
         }
     }
 }
+apply from: 'tabgram.gradle'
