@@ -1127,7 +1127,7 @@ public class NotificationsController extends BaseController implements Notificat
                 MessageObject messageObject = messageObjects.get(a);
                 if (messageObject.messageOwner != null && (messageObject.isImportedForward() ||
                         messageObject.messageOwner.action instanceof TLRPC.TL_messageActionSetMessagesTTL ||
-                        messageObject.messageOwner.silent && (messageObject.messageOwner.action instanceof TLRPC.TL_messageActionContactSignUp || messageObject.messageOwner.action instanceof TLRPC.TL_messageActionUserJoined)) ||
+                        org.telegram.tabgram.ContactJoined.suppress(currentAccount, messageObject.messageOwner)) ||
                         MessageObject.isTopicActionMessage(messageObject)) {
                     if (BuildVars.LOGS_ENABLED) {
                         FileLog.d("skipped message because 1");
@@ -1586,7 +1586,7 @@ public class NotificationsController extends BaseController implements Notificat
                     }
                     if (message.fwd_from != null && message.fwd_from.imported ||
                             message.action instanceof TLRPC.TL_messageActionSetMessagesTTL ||
-                            message.silent && (message.action instanceof TLRPC.TL_messageActionContactSignUp || message.action instanceof TLRPC.TL_messageActionUserJoined)) {
+                            org.telegram.tabgram.ContactJoined.suppress(currentAccount, message)) {
                         continue;
                     }
                     long did;
