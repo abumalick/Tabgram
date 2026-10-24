@@ -1,5 +1,7 @@
 // Tabgram build identity, kept out of the module scripts so upstream merges stay clean.
 def tabgramPackage = 'net.hilson.tabgram'
+// Bump for every Tabgram release on the same upstream version; reset to 1 after an upstream update.
+def tabgramRevision = 2
 
 def tabgramPropsFile = rootProject.file('unofficial.properties')
 def tabgramProps = new Properties()
@@ -30,6 +32,18 @@ project(':TMessagesProj') {
 }
 
 project(':TMessagesProj_App') { app ->
+    // Upstream's code is versionCode * 10 + ABI; Tabgram appends two digits so its own releases
+    // can update in place. This afterEvaluate is registered before the Android plugin's, which
+    // creates the variants and locks their versionCode, and after the module script has registered
+    // its own variant callback, so this one runs last.
+    app.afterEvaluate {
+        app.android.applicationVariants.all { variant ->
+            variant.outputs.all { output ->
+                output.versionCodeOverride = (app.android.defaultConfig.versionCode * 10 + variant.productFlavors.get(0).abiVersionCode) * 100 + tabgramRevision
+            }
+        }
+    }
+
     plugins.withId('com.android.application') {
         // The module script sets applicationId, the debug suffix and signing after this
         // callback runs, so the overrides go in finalizeDsl to win.
