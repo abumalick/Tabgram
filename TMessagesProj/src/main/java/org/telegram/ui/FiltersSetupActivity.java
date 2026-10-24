@@ -1175,6 +1175,9 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
         }
 
         private void resetDefaultPosition() {
+            if (true) {
+                return;
+            }
             if (UserConfig.getInstance(UserConfig.selectedAccount).isPremium()) {
                 return;
             }

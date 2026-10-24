@@ -855,7 +855,7 @@ public class MessagesController extends BaseController implements NotificationCe
             return;
         }
         if (!premium) {
-            if (!dialogFilters.get(0).isDefault()) {
+            if (false && !dialogFilters.get(0).isDefault()) {
                 for (int i = 1; i < dialogFilters.size(); i++) {
                     if (dialogFilters.get(i).isDefault()) {
                         DialogFilter defaultFilter = dialogFilters.remove(i);
@@ -879,21 +879,16 @@ public class MessagesController extends BaseController implements NotificationCe
     public void lockFiltersInternal() {
         boolean changed = false;
         if (!getUserConfig().isPremium() && dialogFilters.size() - 1 > dialogFiltersLimitDefault) {
-            int n = dialogFilters.size() - 1 - dialogFiltersLimitDefault;
-            ArrayList<DialogFilter> filtersSortedById = new ArrayList<>(dialogFilters);
-            Collections.reverse(filtersSortedById);
-            for (int i = 0; i < filtersSortedById.size(); i++) {
-                if (i < n) {
-                    if (!filtersSortedById.get(i).locked) {
-                        changed = true;
-                    }
-                    filtersSortedById.get(i).locked = true;
-                } else {
-                    if (filtersSortedById.get(i).locked) {
-                        changed = true;
-                    }
-                    filtersSortedById.get(i).locked = false;
+            boolean[] isDefault = new boolean[dialogFilters.size()];
+            for (int i = 0; i < isDefault.length; i++) {
+                isDefault[i] = dialogFilters.get(i).isDefault();
+            }
+            boolean[] locked = org.telegram.tabgram.FolderLocks.compute(isDefault, dialogFiltersLimitDefault);
+            for (int i = 0; i < locked.length; i++) {
+                if (dialogFilters.get(i).locked != locked[i]) {
+                    changed = true;
                 }
+                dialogFilters.get(i).locked = locked[i];
             }
         }
         if (changed) {

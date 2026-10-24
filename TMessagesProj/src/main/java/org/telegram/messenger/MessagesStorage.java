@@ -3529,6 +3529,7 @@ public class MessagesStorage extends BaseController {
                         filtersToSave.add(filter);
                     }
                 }
+                org.telegram.tabgram.FolderOrder.keepLocalDefaultPosition(filtersOrder, dialogFilters, getUserConfig().isPremium());
 
                 TLRPC.messages_Dialogs dialogs;
                 if (!dialogsToLoad.isEmpty()) {
