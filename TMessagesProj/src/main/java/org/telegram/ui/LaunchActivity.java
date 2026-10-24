@@ -1332,7 +1332,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             tabletFullSize = false;
             List<BaseFragment> fragmentStack = actionBarLayout.getFragmentStack();
             if (fragmentStack.size() >= 2) {
-                for (int a = 1; a < fragmentStack.size(); a++) {
+                for (int a = org.telegram.tabgram.TabletPanes.firstMovedIndex(fragmentStack); a < fragmentStack.size(); a++) {
                     BaseFragment chatFragment = fragmentStack.get(a);
                     if (chatFragment instanceof ChatActivity) {
                         ((ChatActivity) chatFragment).setIgnoreAttachOnPause(true);
