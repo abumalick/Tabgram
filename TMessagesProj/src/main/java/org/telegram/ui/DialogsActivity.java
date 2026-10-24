@@ -10374,10 +10374,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             permissons.add(Manifest.permission.GET_ACCOUNTS);
         }
         if (Build.VERSION.SDK_INT >= 33) {
-            if (activity.checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+            if (org.telegram.tabgram.MediaPermissions.askFullMediaAtStartup(activity) && activity.checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                 permissons.add(Manifest.permission.READ_MEDIA_IMAGES);
             }
-            if (activity.checkSelfPermission(Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
+            if (org.telegram.tabgram.MediaPermissions.askFullMediaAtStartup(activity) && activity.checkSelfPermission(Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
                 permissons.add(Manifest.permission.READ_MEDIA_VIDEO);
             }
             if (activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
