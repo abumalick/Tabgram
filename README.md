@@ -11,6 +11,20 @@ Changes from the official app:
 - Each chat or channel gets its own notification instead of one grouped notification, so tapping it always opens that chat.
 - Fixes: Back on tablets after a layout change, Archive kept on rotation, the New Contacts notification switch, and no repeated photo-access prompt after limited access.
 
+### Install with Obtainium
+
+Tabgram is published as [GitHub releases](https://github.com/abumalick/Tabgram/releases) of this repository (arm64-v8a devices only). [Obtainium](https://github.com/ImranR98/Obtainium) installs it from there and keeps it updated.
+
+1. Install Obtainium.
+2. In Obtainium, tap Add App, enter `https://github.com/abumalick/Tabgram` as the App Source URL and add it. The default settings are enough.
+3. Install Tabgram from Obtainium; it then checks the releases for updates.
+
+The APK is signed with certificate SHA-256 `888f1be3da580c04d230906d4d03fbb80ceff9a41b0288d4ebfb83c87fb610a3`.
+
+Tabgram has its own application ID (`net.hilson.tabgram`), so it installs next to the official Telegram app rather than replacing it.
+
+### Build
+
 To build it, see [UPSTREAM-UPDATE.md](UPSTREAM-UPDATE.md). You need your own api_id, signing key and Firebase project in the gitignored files it lists.
 
 The upstream README follows.
