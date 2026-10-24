@@ -545,6 +545,20 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     private final BoolAnimator isSponsoredMessageHidden = new BoolAnimator(SPONSORED_MESSAGE_HIDDEN_ANIMATOR_ID, this,
         CubicBezierInterpolator.EASE_OUT_QUINT, 380);
 
+    private final org.telegram.tabgram.CompactSponsoredPill compactSponsoredPill = new org.telegram.tabgram.CompactSponsoredPill(this, new org.telegram.tabgram.CompactSponsoredPill.LongPress() {
+        @Override
+        public void start(float x, float y) {
+            lastTouchX = x;
+            lastTouchY = y;
+            startCheckLongPress();
+        }
+
+        @Override
+        public void cancel() {
+            cancelCheckLongPress();
+        }
+    });
+
     @Override
     public void onFactorChanged(int id, float factor, float fraction, FactorAnimator callee) {
         if (id == SPONSORED_MESSAGE_HIDDEN_ANIMATOR_ID) {
@@ -4923,6 +4937,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             }
         }
 
+        if (currentMessageObject.isSponsored()) {
+            return compactSponsoredPill.onTouchEvent(event, getEventX(event), getEventY(event));
+        }
+
         if (checkTextSelection(event)) {
             return true;
         }
@@ -6958,10 +6976,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             animatingNoSound = 0;
             drawSideButton2 = 0;
             if (messageObject.isSponsored()) {
-                drawSideButton = 4;
-                if (messageObject.sponsoredCanReport) {
-                    drawSideButton2 = 5;
-                }
+                drawSideButton = 0;
             } else if (messageObject.searchType == ChatActivity.SEARCH_PUBLIC_POSTS) {
                 drawSideButton = checkNeedDrawShareButton(messageObject) ? 2 : 0;
             } else if (messageObject.searchType == ChatActivity.SEARCH_MY_MESSAGES) {
@@ -7365,6 +7380,28 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     channelRecommendationsCell = new ChannelRecommendationsCell(this);
                 }
                 channelRecommendationsCell.setMessageObject(messageObject);
+            } else if (messageObject.isSponsored()) {
+                drawForwardedName = false;
+                hasReplyQuote = false;
+                isReplyQuote = false;
+                isReplyTaskOrPollOption = false;
+                replyNameLayout = null;
+                replyTextLayout = null;
+                drawSummaryReply = false;
+                forwardedNameLayout[0] = null;
+                forwardedNameLayout[1] = null;
+                drawName = false;
+                isAvatarVisible = false;
+                drawPinnedTop = false;
+                drawPinnedBottom = false;
+                mediaBackground = true;
+                // the click still goes through didPressInstantButton, which logs it and opens the ad link
+                drawInstantViewType = 1;
+                updateCurrentUserAndChat();
+                measureTime(messageObject);
+                compactSponsoredPill.layout(messageObject, getAuthorName(), getParentWidth());
+                backgroundWidth = compactSponsoredPill.contentWidth();
+                totalHeight = dp(org.telegram.tabgram.CompactSponsoredPill.ROW_HEIGHT_DP);
             } else if (messageObject.isExpiredStory()) {
                 if (!messageIdChanged) {
                     requestLayout();
@@ -12116,6 +12153,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
 
     @Override
     protected boolean onLongPress() {
+        if (currentMessageObject != null && currentMessageObject.isSponsored()) {
+            return compactSponsoredPill.onLongPress();
+        }
         if (isRoundVideo && isPlayingRound && MediaController.getInstance().isPlayingMessage(currentMessageObject)) {
             float touchRadius = (lastTouchX - photoImage.getCenterX()) * (lastTouchX - photoImage.getCenterX()) + (lastTouchY - photoImage.getCenterY()) * (lastTouchY - photoImage.getCenterY());
             float r1 = (photoImage.getImageWidth() / 2f) * (photoImage.getImageWidth() / 2f);
@@ -20170,6 +20210,13 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             canvas.translate(0, getStarsPriceTopPadding() + suggestionOfferTopPadding + getTopicSeparatorTopPadding());
         }
 
+        if (currentMessageObject.isSponsored()) {
+            compactSponsoredPill.draw(canvas);
+            transitionParams.recordDrawingState();
+            canvas.restoreToCount(restore);
+            return;
+        }
+
         if (isWidthAdaptive()) {
             canvas.save();
             canvas.translate(-getBoundsLeft(), 0);
@@ -21089,7 +21136,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             channelRecommendationsCell.draw(canvas);
             return;
         }
-        if (currentMessageObject == null) {
+        if (currentMessageObject == null || currentMessageObject.isSponsored()) {
             return;
         }
 
@@ -21987,6 +22034,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     }
 
     public void drawNamesLayout(Canvas canvas, float alpha) {
+        if (currentMessageObject != null && currentMessageObject.isSponsored()) {
+            return;
+        }
         long newAnimationTime = SystemClock.elapsedRealtime();
         long dt = newAnimationTime - lastNamesAnimationTime;
         if (dt > 17) {
@@ -23869,7 +23919,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (!drawFromPinchToZoom && delegate != null && delegate.getPinchToZoomHelper() != null && delegate.getPinchToZoomHelper().isInOverlayModeFor(this) && shouldDrawTimeOnMedia()) {
             return;
         }
-        if (currentMessageObject != null && currentMessageObject.type == MessageObject.TYPE_JOINED_CHANNEL) {
+        if (currentMessageObject != null && (currentMessageObject.type == MessageObject.TYPE_JOINED_CHANNEL || currentMessageObject.isSponsored())) {
             return;
         }
         for (int i = 0; i < 2; i++) {
@@ -26590,6 +26640,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (delegate != null && delegate.onAccessibilityAction(action, arguments)) {
             return false;
         }
+        if (currentMessageObject != null && currentMessageObject.isSponsored() && compactSponsoredPill.performAccessibilityAction(action)) {
+            return true;
+        }
         if (action == AccessibilityNodeInfo.ACTION_CLICK) {
             int icon = getIconForCurrentState();
             if (icon != MediaActionDrawable.ICON_NONE && icon != MediaActionDrawable.ICON_FILE) {
@@ -27120,7 +27173,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                             sb.append(formatString(R.string.AccDescrDocumentType, fileName.substring(fileName.lastIndexOf('.') + 1).toUpperCase(Locale.ROOT)));
                         }
                     }
-                    if (currentMessageObject.richLayout != null && !currentMessageObject.richLayout.blocks.isEmpty()) {
+                    if (currentMessageObject.isSponsored()) {
+                        sb.append(compactSponsoredPill.text());
+                    } else if (currentMessageObject.richLayout != null && !currentMessageObject.richLayout.blocks.isEmpty()) {
                         for (RichMessageLayout.RichBlock block : currentMessageObject.richLayout.blocks) {
                             if (!block.isVisible()) {
                                 continue;
