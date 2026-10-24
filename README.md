@@ -11,6 +11,21 @@ Changes from the official app:
 - Each chat or channel gets its own notification instead of one grouped notification, so tapping it always opens that chat.
 - Fixes: Back on tablets after a layout change, Archive kept on rotation, the New Contacts notification switch, and no repeated photo-access prompt after limited access.
 
+### Install from F-Droid
+
+Tabgram is published in a personal F-Droid repository (arm64-v8a devices only).
+
+1. Install [F-Droid](https://f-droid.org).
+2. On the device, open this link, or scan it as a QR code, to add the repository:
+   https://fdroid.hilson.net/repo?fingerprint=e818ba438881b7fbaeda975f6e8e4e5a345eb00c72c4a09a7234b78ffad24b7c
+3. Refresh the repositories in F-Droid, search for "Tabgram" and install it.
+
+Repository signing key SHA-256: `E8 18 BA 43 88 81 B7 FB AE DA 97 5F 6E 8E 4E 5A 34 5E B0 0C 72 C4 A0 9A 72 34 B7 8F FA D2 4B 7C`. The APK is signed with certificate SHA-256 `888f1be3da580c04d230906d4d03fbb80ceff9a41b0288d4ebfb83c87fb610a3`.
+
+Tabgram has its own application ID (`net.hilson.tabgram`), so it installs next to the official Telegram app rather than replacing it.
+
+### Build
+
 To build it, see [UPSTREAM-UPDATE.md](UPSTREAM-UPDATE.md). You need your own api_id, signing key and Firebase project in the gitignored files it lists.
 
 The upstream README follows.
