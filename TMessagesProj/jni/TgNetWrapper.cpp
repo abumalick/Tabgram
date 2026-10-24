@@ -275,7 +275,7 @@ void updateDcSettings(JNIEnv *env, jclass c, jint instanceNum) {
 }
 
 void moveDatacenter(JNIEnv *env, jclass c, jint instanceNum, jint datacenterId) {
-    ConnectionsManager::getInstance(instanceNum).moveToDatacenter(datacenterId);
+    ConnectionsManager::getInstance(instanceNum).scheduleMoveToDatacenter(datacenterId);
 }
 
 void setIpStrategy(JNIEnv *env, jclass c, jint instanceNum, jbyte value) {

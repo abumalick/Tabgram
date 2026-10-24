@@ -144,6 +144,7 @@ import org.telegram.messenger.SRPHelper;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
+import org.telegram.tabgram.QrLoginView;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.RequestDelegate;
 import org.telegram.tgnet.SerializedData;
@@ -258,7 +259,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             VIEW_CODE_FRAGMENT_SMS = 15,
             VIEW_CODE_WORD = 16,
             VIEW_CODE_PHRASE = 17,
-            VIEW_PAY = 18;
+            VIEW_PAY = 18,
+            VIEW_QR = 19;
 
     public final static int COUNTRY_STATE_NOT_SET_OR_VALID = 0,
             COUNTRY_STATE_EMPTY = 1,
@@ -306,7 +308,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             VIEW_CODE_FRAGMENT_SMS,
             VIEW_CODE_WORD,
             VIEW_CODE_PHRASE,
-            VIEW_PAY
+            VIEW_PAY,
+            VIEW_QR
     })
     private @interface ViewNumber {}
 
@@ -319,7 +322,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
     @ViewNumber
     private int currentViewNum;
-    private final SlideView[] views = new SlideView[19];
+    private final SlideView[] views = new SlideView[20];
     private CustomPhoneKeyboardView keyboardView;
     private ValueAnimator keyboardAnimator;
     private boolean paid;
@@ -526,12 +529,14 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         }
         getNotificationCenter().removeObserver(this, NotificationCenter.didUpdateConnectionState);
         getNotificationCenter().removeObserver(this, NotificationCenter.newSuggestionsAvailable);
+        getNotificationCenter().removeObserver(this, NotificationCenter.loginTokenUpdated);
     }
 
     @Override
     public boolean onFragmentCreate() {
         getNotificationCenter().addObserver(this, NotificationCenter.didUpdateConnectionState);
         getNotificationCenter().addObserver(this, NotificationCenter.newSuggestionsAvailable);
+        getNotificationCenter().addObserver(this, NotificationCenter.loginTokenUpdated);
         return super.onFragmentCreate();
     }
 
@@ -685,6 +690,37 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         views[VIEW_CODE_WORD] = new LoginActivityPhraseView(context, AUTH_TYPE_WORD);
         views[VIEW_CODE_PHRASE] = new LoginActivityPhraseView(context, AUTH_TYPE_PHRASE);
         views[VIEW_PAY] = new LoginPayView(context);
+        views[VIEW_QR] = new QrLoginView(context, currentAccount, new QrLoginView.Host() {
+            @Override
+            public boolean isQrPageShown() {
+                return currentViewNum == VIEW_QR;
+            }
+
+            @Override
+            public void showPhoneInput() {
+                setPage(VIEW_PHONE_INPUT, true, null, true);
+            }
+
+            @Override
+            public void showPassword(Bundle params) {
+                setPage(VIEW_PASSWORD, true, params, false);
+            }
+
+            @Override
+            public void onAuthorized(TLRPC.TL_auth_authorization auth) {
+                onAuthSuccess(auth);
+            }
+
+            @Override
+            public void alert(String title, String text) {
+                needShowAlert(title, text);
+            }
+
+            @Override
+            public Activity getParentActivity() {
+                return LoginActivity.this.getParentActivity();
+            }
+        });
 
         for (int a = 0; a < views.length; a++) {
             views[a].setVisibility(a == 0 ? View.VISIBLE : View.GONE);
@@ -722,6 +758,10 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     savedInstanceState = null;
                     clearCurrentState();
                 }
+            } else if (currentViewNum == VIEW_QR) {
+                currentViewNum = VIEW_PHONE_INPUT;
+                savedInstanceState = null;
+                clearCurrentState();
             }
         }
 
@@ -1967,6 +2007,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         private ImageView chevronRight;
         private CheckBoxCell syncContactsBox;
         private CheckBoxCell testBackendCheckBox;
+        private TextView qrLoginButton;
 
         @CountryState
         private int countryState = COUNTRY_STATE_NOT_SET_OR_VALID;
@@ -2497,6 +2538,15 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 });
             }
 
+            if (activityMode == MODE_LOGIN) {
+                qrLoginButton = QrLoginView.createPhoneScreenButton(context, () -> {
+                    AndroidUtilities.hideKeyboard(phoneField);
+                    setPage(VIEW_QR, true, null, false);
+                });
+                addView(qrLoginButton, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, 40, Gravity.CENTER_HORIZONTAL, 16, 8, 16, 0));
+                bottomMargin -= 48;
+            }
+
             if (bottomMargin > 0 && !AndroidUtilities.isSmallScreen()) {
                 Space bottomSpacer = new Space(context);
                 bottomSpacer.setMinimumHeight(AndroidUtilities.dp(bottomMargin));
@@ -2701,6 +2751,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 testBackendCheckBox.setSquareCheckBoxColor(Theme.key_checkboxSquareUnchecked, Theme.key_checkboxSquareBackground, Theme.key_checkboxSquareCheck);
                 testBackendCheckBox.updateTextColor();
             }
+            QrLoginView.updateLinkButtonColor(qrLoginButton);
 
             phoneOutlineView.updateColor();
             countryOutlineView.updateColor();
@@ -5480,7 +5531,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                             .setTitle(getString(R.string.RestorePasswordNoEmailTitle))
                             .setMessage(getString(R.string.RestorePasswordNoEmailText))
                             .setPositiveButton(getString(R.string.Close), null)
-                            .setNegativeButton(getString(R.string.ResetAccount), (dialog, which) -> tryResetAccount(requestPhone, phoneHash, phoneCode))
+                            // QR-code login reaches this view without a phone number, so there is no account to re-register after a reset
+                            .setNegativeButton(phoneHash == null ? null : getString(R.string.ResetAccount), (dialog, which) -> tryResetAccount(requestPhone, phoneHash, phoneCode))
                             .show();
                 }
             });
@@ -8850,6 +8902,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             if (emailChangeIsSuggestion && !getMessagesController().hasSetupEmailSuggestion()) {
                 finishFragment();
             }
+        } else if (id == NotificationCenter.loginTokenUpdated && currentViewNum == VIEW_QR && views[VIEW_QR] != null) {
+            ((QrLoginView) views[VIEW_QR]).exportToken();
         }
     }
 

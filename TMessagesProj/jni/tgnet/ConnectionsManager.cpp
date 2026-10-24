@@ -3504,6 +3504,12 @@ void ConnectionsManager::moveToDatacenter(uint32_t datacenterId) {
     authorizeOnMovingDatacenter();
 }
 
+void ConnectionsManager::scheduleMoveToDatacenter(uint32_t datacenterId) {
+    scheduleTask([&, datacenterId] {
+        moveToDatacenter(datacenterId);
+    });
+}
+
 void ConnectionsManager::authorizeOnMovingDatacenter() {
     Datacenter *datacenter = getDatacenterWithId(movingToDatacenterId);
     if (datacenter == nullptr) {

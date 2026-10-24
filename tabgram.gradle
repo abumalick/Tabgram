@@ -52,6 +52,12 @@ project(':TMessagesProj_App') { app ->
             }
         }
 
+        // Strings resolve through the generated localization assets, which only read the
+        // values/strings.xml files the task is given; Android string resources alone render as LOC_ERR.
+        app.tasks.withType(org.telegram.tasks.TelegramStringsTask).configureEach {
+            stringsXml.from(project(':TMessagesProj').file('src/tabgram/res/values/strings.xml'))
+        }
+
         // Without it the Google Services plugin silently falls back to the upstream config.
         def releaseGoogleServices = app.file('src/release/google-services.json')
         app.tasks.matching { it.name ==~ /process\w*ReleaseGoogleServices/ }.configureEach {
