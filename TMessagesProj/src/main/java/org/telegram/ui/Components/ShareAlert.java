@@ -2929,7 +2929,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 if (!(dialog instanceof TLRPC.TL_dialog)) {
                     continue;
                 }
-                if (dialog.id == selfUserId) {
+                if (dialog.id == selfUserId || org.telegram.tabgram.ContactJoined.hideDialog(MessagesController.getInstance(currentAccount), currentAccount, dialog)) {
                     continue;
                 }
                 if (!DialogObject.isEncryptedDialog(dialog.id)) {

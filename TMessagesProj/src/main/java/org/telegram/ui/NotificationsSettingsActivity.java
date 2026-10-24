@@ -616,6 +616,7 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
                     TL_account.resetNotifySettings req = new TL_account.resetNotifySettings();
                     ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
                         getMessagesController().enableJoined = true;
+                        org.telegram.tabgram.ContactJoined.onSwitchChanged(currentAccount);
                         reseting = false;
                         SharedPreferences preferences = MessagesController.getNotificationsSettings(currentAccount);
                         SharedPreferences.Editor editor = preferences.edit();
@@ -676,6 +677,7 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
                 MessagesController.getInstance(currentAccount).enableJoined = !enabled;
                 editor.putBoolean("EnableContactJoined", !enabled);
                 editor.commit();
+                org.telegram.tabgram.ContactJoined.onSwitchChanged(currentAccount);
                 TL_account.setContactSignUpNotification req = new TL_account.setContactSignUpNotification();
                 req.silent = enabled;
                 ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> {

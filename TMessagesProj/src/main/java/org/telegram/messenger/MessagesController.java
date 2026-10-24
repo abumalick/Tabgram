@@ -12695,6 +12695,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 enableJoined = response instanceof TLRPC.TL_boolFalse;
                 editor.putBoolean("EnableContactJoined", enableJoined);
                 editor.commit();
+                org.telegram.tabgram.ContactJoined.onSwitchChanged(currentAccount);
                 getUserConfig().notificationsSignUpSettingsLoaded = true;
                 getUserConfig().saveConfig(false);
             }));
@@ -13843,6 +13844,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     if (currentDialog != null) {
                         int prevCount = currentDialog.unread_count;
                         currentDialog.unread_count = dialogsToUpdate.valueAt(a);
+                        org.telegram.tabgram.ContactJoined.hideDialog(this, currentAccount, currentDialog);
                         if (BuildVars.DEBUG_PRIVATE_VERSION) {
                             FileLog.d("update dialog " + dialogId + " with new unread " + currentDialog.unread_count);
                         }
@@ -22409,7 +22411,7 @@ public class MessagesController extends BaseController implements NotificationCe
                                 dialogId = encryptedChat.user_id;
                             }
                         }
-                        if (sortingDialogFilter.includesDialog(getAccountInstance(), dialogId, d)) {
+                        if (!org.telegram.tabgram.ContactJoined.hideDialog(this, currentAccount, d) && sortingDialogFilter.includesDialog(getAccountInstance(), dialogId, d)) {
                             if (canAddToForward(d)) {
                                 dialogsForward.add(d);
                             }
@@ -22494,7 +22496,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                     }
                 }
-                if (canAddToForward(d) && d.folder_id == 0) {
+                if (canAddToForward(d) && d.folder_id == 0 && !org.telegram.tabgram.ContactJoined.hideDialog(this, currentAccount, d)) {
                     if (d.id == selfId) {
                         dialogsForward.add(0, d);
                         selfAdded = true;
@@ -22526,7 +22528,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
             }
 
-            if (addToFolder) {
+            if (addToFolder && !org.telegram.tabgram.ContactJoined.hideDialog(this, currentAccount, d)) {
                 addDialogToItsFolder(-1, d);
             }
 
