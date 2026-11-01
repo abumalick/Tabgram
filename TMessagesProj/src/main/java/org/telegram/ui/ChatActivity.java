@@ -22118,7 +22118,7 @@ public class ChatActivity extends BaseFragment implements
                 }
             } else {
                 if (AndroidUtilities.isTablet() && parentLayout != null && parentLayout.getFragmentStack().size() > 1) {
-                    finishFragment();
+                    finishFragment(false);
                 } else {
                     removeSelfFromStack(true);
                 }
